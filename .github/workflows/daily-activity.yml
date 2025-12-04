@@ -39,7 +39,16 @@ jobs:
 
       - name: Commit and push if changed
         run: |
-          if git diff --quiet; then
+          # Configure git user for the bot
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Stage the log file (new or existing)
+          git add activity.log
+
+          # If there is nothing to commit (shouldn't happen since we appended),
+          # git status --porcelain will be empty.
+          if [ -z "$(git status --porcelain)" ]; then
             echo "No changes to commit."
             exit 0
           fi
@@ -71,12 +80,8 @@ jobs:
           size=${#msgs[@]}
           index=$((RANDOM % size))
           BASE_MESSAGE="${msgs[$index]}"
-          TIMESTAMP=$(date -u +'%Y-%m-%d %H:%M:%S UTC')          
+          TIMESTAMP=$(date -u +'%Y-%m-%d %H:%M:%S UTC')
           COMMIT_MESSAGE="${BASE_MESSAGE} (${TIMESTAMP})"
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add activity.log
           git commit -m "$COMMIT_MESSAGE"
           git push
